@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaraRecon - Laravel Offensive Recon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #050b12;
+            color: #00ff9c;
+            font-family: 'Courier New', 'Consolas', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Effet de fond avec points et lignes */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        /* En-tête avec effet néon */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 3.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff9c, 0 0 20px #00ff9c, 0 0 30px rgba(0, 255, 156, 0.5);
+            animation: pulse 2s infinite alternate;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .header h1:before {
+            content: ">";
+            position: absolute;
+            left: -25px;
+            top: 0;
+            animation: blink 1s infinite;
+        }
+        
+        .header h1:after {
+            content: "_";
+            position: absolute;
+            right: -15px;
+            top: 0;
+            animation: blink 1s infinite;
+        }
+        
+        .tagline {
+            color: #00ccff;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        /* Panneau de contrôle */
+        .control-panel {
+            background: rgba(0, 20, 30, 0.7);
+            border: 1px solid #00ff9c;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-panel:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff9c, transparent);
+            animation: scanline 3s linear infinite;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            margin-bottom: 10px;
+            color: #00ccff;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group label i {
+            margin-right: 10px;
+        }
+        
+        .url-input-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        #url {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #006644;
+            border-radius: 4px;
+            color: #00ff9c;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+        
+        #url:focus {
+            outline: none;
+            border-color: #00ff9c;
+            box-shadow: 0 0 15px rgba(0, 255, 156, 0.5);
+        }
+        
+        /* Bouton de scan avec effet */
+        #scan-btn {
+            background: linear-gradient(45deg, #003322, #006644);
+            border: none;
+            border-radius: 4px;
+            color: #00ff9c;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #scan-btn:hover {
+            background: linear-gradient(45deg, #00aa66, #00ff9c);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 156, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        #scan-btn:active {
+            transform: translateY(1px);
+        }
+        
+        #scan-btn:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        #scan-btn:hover:before {
+            left: 100%;
+        }
+        
+        /* Panneau de résultats */
+        .results-panel {
+            background: rgba(0, 20, 30, 0.7);
+            border: 1px solid #00ff9c;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .results-panel:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff9c, transparent);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 156, 0.3);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            color: #00ccff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-count {
+            background: rgba(0, 255, 156, 0.1);
+            border: 1px solid rgba(0, 255, 156, 0.3);
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Table des résultats */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        
+        .results-table thead {
+            background: rgba(0, 50, 70, 0.8);
+            border-bottom: 2px solid #00ff9c;
+        }
+        
+        .results-table th {
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: bold;
+            color: #00ff9c;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .results-table tbody tr {
+            border-bottom: 1px solid rgba(0, 255, 156, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .results-table tbody tr:hover {
+            background: rgba(0, 255, 156, 0.05);
+            box-shadow: 0 0 10px rgba(0, 255, 156, 0.1);
+        }
+        
+        .results-table td {
+            padding: 12px 10px;
+        }
+        
+        /* Classes de niveaux de gravité */
+        .CRITICAL {
+            color: #ff3366;
+            text-shadow: 0 0 8px rgba(255, 51, 102, 0.7);
+            font-weight: bold;
+        }
+        
+        .HIGH {
+            color: #ff9933;
+            text-shadow: 0 0 5px rgba(255, 153, 51, 0.5);
+            font-weight: bold;
+        }
+        
+        .MEDIUM {
+            color: #ffff33;
+            text-shadow: 0 0 5px rgba(255, 255, 51, 0.5);
+        }
+        
+        .INFO {
+            color: #33ccff;
+        }
+        
+        .status-code {
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        /* Indicateur de scan */
+        .scanning-indicator {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        
+        .scanning-indicator.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(0, 255, 156, 0.1);
+            border-top: 5px solid #00ff9c;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .scanning-text {
+            color: #00ccff;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            animation: pulse-text 1.5s infinite alternate;
+        }
+        
+        /* Pied de page */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(0, 255, 156, 0.1);
+            margin-top: 30px;
+        }
+        
+        .author-credit {
+            color: #00ff9c;
+            margin-top: 10px;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(0, 255, 156, 0.5);
+        }
+        
+        .author-credit i {
+            margin-right: 5px;
+            color: #00ccff;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px #00ff9c, 0 0 20px #00ff9c, 0 0 30px rgba(0, 255, 156, 0.5); }
+            100% { text-shadow: 0 0 15px #00ff9c, 0 0 30px #00ff9c, 0 0 40px rgba(0, 255, 156, 0.8); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse-text {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .url-input-container {
+                flex-direction: column;
+            }
+            
+            #url {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .results-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .panel-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Effet de fond matriciel -->
+    <canvas id="matrix-bg"></canvas>
+    
+    <!-- En-tête principal -->
+    <div class="header">
+        <h1>LaraRecon</h1>
+        <div class="tagline">LARAVEL OFFENSIVE RECONNAISSANCE</div>
+        <div class="subtitle">Advanced security scanning tool for Laravel applications. Identify vulnerabilities, misconfigurations, and exposed endpoints.</div>
+    </div>
+    
+    <!-- Panneau de contrôle -->
+    <div class="control-panel">
+        <div class="input-group">
+            <label for="url"><i class="fas fa-crosshairs"></i> TARGET URL</label>
+            <div class="url-input-container">
+                <input type="text" id="url" placeholder="https://target-laravel-app.com" value="https://example.com">
+                <button id="scan-btn" onclick="scan()">
+                    <i class="fas fa-search"></i> INITIATE SCAN
+                </button>
+            </div>
+        </div>
+        
+        <div class="scanning-indicator" id="scanningIndicator">
+            <div class="spinner"></div>
+            <div class="scanning-text">SCANNING TARGET... ANALYZING ENDPOINTS...</div>
+        </div>
+    </div>
+    
+    <!-- Panneau de résultats -->
+    <div class="results-panel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <i class="fas fa-list-alt"></i> SCAN RESULTS
+            </div>
+            <div class="results-count" id="resultsCount">0 VULNERABILITIES FOUND</div>
+        </div>
+        
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th width="40%">PATH</th>
+                    <th width="10%">STATUS</th>
+                    <th width="15%">SEVERITY</th>
+                    <th width="35%">DETAILS</th>
+                </tr>
+            </thead>
+            <tbody id="result">
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-eye-slash" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                        NO SCAN RESULTS YET. ENTER A TARGET URL AND INITIATE SCAN.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pied de page -->
+    <div class="footer">
+        <div>LaraRecon v1.0 | FOR EDUCATIONAL AND AUTHORIZED TESTING ONLY</div>
+        <div class="author-credit">
+            <i class="fas fa-code"></i> Tool created by <strong>hackus_man</strong>
+        </div>
+        <div style="margin-top: 10px; font-size: 0.8rem;">
+            <i class="fas fa-exclamation-triangle" style="color: #ff9933; margin-right: 5px;"></i>
+            Use responsibly. Unauthorized scanning is illegal.
+        </div>
+    </div>
+
+    <script>
+        // Effet de fond matriciel
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$+-*/=%"\'#&_(),.;:?!\\|{}<>[]^~';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 11, 18, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff9c';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                const x = i * fontSize;
+                const y = drops[i] * fontSize / fontSize;
+                
+                ctx.fillText(text, x, y);
+                
+                if(y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        // Redimensionnement du canvas
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Données de démonstration pour le scan
+        const demoData = [
+            {path: "/.env", status: "200", level: "CRITICAL", reason: "Environment file exposed"},
+            {path: "/storage/logs/laravel.log", status: "200", level: "CRITICAL", reason: "Application logs accessible"},
+            {path: "/phpinfo", status: "200", level: "HIGH", reason: "PHP info exposure"},
+            {path: "/admin", status: "302", level: "MEDIUM", reason: "Admin panel redirect"},
+            {path: "/api/users", status: "200", level: "HIGH", reason: "User data endpoint exposed"},
+            {path: "/config.json", status: "200", level: "CRITICAL", reason: "Configuration file accessible"},
+            {path: "/backup.zip", status: "200", level: "CRITICAL", reason: "Backup file found"},
+            {path: "/debug", status: "200", level: "HIGH", reason: "Debug mode enabled"},
+            {path: "/.git/HEAD", status: "200", level: "HIGH", reason: "Git repository exposed"},
+            {path: "/robots.txt", status: "200", level: "INFO", reason: "Standard robots file"},
+            {path: "/.DS_Store", status: "200", level: "MEDIUM", reason: "OS metadata file exposed"},
+            {path: "/phpmyadmin", status: "404", level: "INFO", reason: "Common admin path not found"}
+        ];
+        
+        // Fonction de scan
+        function scan() {
+            const url = document.getElementById("url").value;
+            const resultTable = document.getElementById("result");
+            const scanningIndicator = document.getElementById("scanningIndicator");
+            const resultsCount = document.getElementById("resultsCount");
+            
+            if (!url) {
+                alert("Please enter a target URL");
+                return;
+            }
+            
+            // Afficher l'indicateur de scan
+            scanningIndicator.classList.add("active");
+            
+            // Effacer les résultats précédents
+            resultTable.innerHTML = "";
+            
+            // Simuler un scan avec un délai pour l'effet
+            setTimeout(() => {
+                // Générer un nombre aléatoire de résultats (pour la démo)
+                const resultCount = Math.floor(Math.random() * 5) + 8;
+                const shuffledData = [...demoData].sort(() => 0.5 - Math.random()).slice(0, resultCount);
+                
+                // Ajouter des résultats avec un effet de défilement
+                let html = "";
+                shuffledData.forEach((item, index) => {
+                    setTimeout(() => {
+                        const row = document.createElement("tr");
+                        row.className = item.level;
+                        row.innerHTML = `
+                            <td><i class="fas fa-link"></i> ${item.path}</td>
+                            <td class="status-code">${item.status}</td>
+                            <td class="${item.level}"><i class="fas fa-exclamation-circle"></i> ${item.level}</td>
+                            <td>${item.reason}</td>
+                        `;
+                        resultTable.appendChild(row);
+                        
+                        // Mettre à jour le compteur
+                        const criticalCount = shuffledData.filter(x => x.level === "CRITICAL").length;
+                        const highCount = shuffledData.filter(x => x.level === "HIGH").length;
+                        const totalCount = shuffledData.length;
+                        resultsCount.textContent = `${totalCount} VULNERABILITIES (${criticalCount} CRITICAL, ${highCount} HIGH)`;
+                        
+                        // Ajouter un effet visuel pour les nouvelles lignes
+                        row.style.opacity = "0";
+                        row.style.transform = "translateX(-20px)";
+                        
+                        setTimeout(() => {
+                            row.style.transition = "opacity 0.5s, transform 0.5s";
+                            row.style.opacity = "1";
+                            row.style.transform = "translateX(0)";
+                        }, 10);
+                        
+                    }, index * 100);
+                });
+                
+                // Masquer l'indicateur de scan
+                setTimeout(() => {
+                    scanningIndicator.classList.remove("active");
+                }, shuffledData.length * 100 + 500);
+                
+            }, 1500);
+        }
+        
+        // Simulation d'un scan automatique au chargement (optionnel)
+        window.addEventListener('load', function() {
+            // Démarrer automatiquement un scan de démonstration après 2 secondes
+            setTimeout(() => {
+                document.getElementById("url").value = "https://laravel-test-site.com";
+                // scan(); // Décommenter pour activer le scan automatique
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
