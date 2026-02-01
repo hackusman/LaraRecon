@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Results{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="container">
+        {% if error %}
+            <div class="error-box">
+                <h2>❌ {{ error }}</h2>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+            </div>
+        {% elif scan %}
+            <div class="results-header">
+                <h1>📊 Scan Results</h1>
+                <div class="target-info">
+                    <p><strong>Target:</strong> {{ scan.target }}</p>
+                    <p><strong>Date:</strong> {{ scan.timestamp }}</p>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card vuln">
+                    <div class="card-icon">🔴</div>
+                    <div class="card-content">
+                        <h3>Vulnerabilities</h3>
+                        <p class="card-number">{{ scan.results.summary.vulnerable }}</p>
+                    </div>
+                </div>
+                <div class="summary-card safe">
+                    <div class="card-icon">🟢</div>
+                    <div class="card-content">
+                        <h3>Secure</h3>
+                        <p class="card-number">{{ scan.results.summary.safe }}</p>
+                    </div>
+                </div>
+                <div class="summary-card warn">
+                    <div class="card-icon">🟡</div>
+                    <div class="card-content">
+                        <h3>Warnings</h3>
+                        <p class="card-number">{{ scan.results.summary.warnings }}</p>
+                    </div>
+                </div>
+                <div class="summary-card score">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-content">
+                        <h3>Score</h3>
+                        <p class="card-number">{{ scan.results.summary.score }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <h2>📥 Download Reports</h2>
+                <div class="download-buttons">
+                    <a href="{{ url_for('download_report', scan_id=scan_id, format='txt') }}" class="btn btn-download txt">📄 TXT</a>
+                    <a href="{{ url_for('download_report', scan_id=scan_id, format='json') }}" class="btn btn-download json">⚙️ JSON</a>
+                    <a href="{{ url_for('download_report', scan_id=scan_id, format='html') }}" class="btn btn-download html">🌐 HTML</a>
+                </div>
+            </div>
+
+            <div class="results-detail">
+                {% for section_name, results in scan.results.sections.items() %}
+                    <div class="section-card">
+                        <h2>{{ section_name }}</h2>
+                        <div class="results-list">
+                            {% for result in results %}
+                                <div class="result-item {{ result.status }}">
+                                    <span class="result-icon">
+                                        {% if result.status == 'vulnerable' %}🔴
+                                        {% elif result.status == 'safe' %}🟢
+                                        {% elif result.status == 'warning' %}🟡
+                                        {% elif result.status == 'info' %}🔵
+                                        {% else %}⚪{% endif %}
+                                    </span>
+                                    <div class="result-content">
+                                        <p class="result-message">{{ result.message }}</p>
+                                        {% if result.details %}
+                                            <div class="result-details">
+                                                {% for key, value in result.details.items() %}
+                                                    <div class="detail-item">
+                                                        <span class="detail-key">{{ key }}:</span>
+                                                        <span class="detail-value">{{ value }}</span>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="actions">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">New Scan</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
