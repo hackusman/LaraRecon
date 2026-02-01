@@ -1,46 +1,82 @@
-# 🔍 LaraRecon
+# 🔍 LaraRecon - Laravel Security Scanner
+
+> Automated security scanner for Laravel applications.
 
 ---
 
-### 📌 Description
-LaraRecon is an automated security scanner specifically designed for Laravel applications. It detects exposed sensitive files (`.env`, logs, backups), misconfigured debug endpoints (Telescope, Horizon, Ignition), version-specific vulnerabilities, and critical CVEs — all through a sleek hacker-themed web interface.
-
-### 📋 Requirements
-- Python 3.8 or higher
-- pip package manager
-
-### ⚙️ Installation
+## 🚀 Quick Start
 
 ```bash
-# 1. Clone the repository
+# Clone & Install
 git clone https://github.com/hackusman/LaraRecon.git
 cd LaraRecon
-
-# 2. Install dependencies
 pip install -r requirements.txt
 
-
-### ▶️ Usage
-
-# Start the scanner
+# Run Scanner
 python app.py
-
-
-### 📁 Project Structure
-```
-lararecon/
-├── app.py              # Main scanner application
-├── requirements.txt    # Python dependencies
-├── reports/            # Generated scan reports (auto-created)
-├── templates/          # Web interface templates
-└── static/             # CSS/JS assets (hacker theme)
 ```
 
-
-## 👤 Author
-**hackus_man**  
+➡️ Open browser: **http://localhost:5000**
 
 ---
 
-> 🔒 LaraRecon v1.0 - Specialized Laravel Security Scanner  
-> *Scan fast. Stay ethical. Secure Laravel.*
+## 📋 Requirements
+- Python 3.8+
+- Modern web browser (Chrome, Firefox, Edge)
+
+---
+
+## 🔄 Usage Flow
+1. Enter target URL (e.g., `https://your-laravel-app.com`)
+2. Click **"INITIATE SCAN"**
+3. Watch real-time progress (18-25 seconds)
+4. View color-coded results:
+   - 🔴 Critical vulnerabilities
+   - 🟡 Warnings
+   - 🟢 Secure items
+5. Download reports:
+   - 📄 TXT (plain text)
+   - ⚙️ JSON (structured data)
+   - 🌐 HTML (interactive report)
+
+> 💡 *The `reports/` folder auto-creates on first scan*
+
+---
+
+## 📁 Project Structure
+```
+LaraRecon/
+├── app.py              # Core scanner engine
+├── requirements.txt    # Dependencies
+├── reports/            # Auto-generated scan reports
+├── templates/          # Web interface (index/results)
+└── static/
+    ├── css/style.css   # Hacker terminal theme
+    └── js/script.js    # Real-time scanning logic
+```
+
+---
+
+## ⚠️ Critical Legal Notice
+> **AUTHORIZED USE ONLY**  
+> This tool is strictly for security testing on systems **you own** or have **written permission** to test.  
+> Unauthorized scanning violates computer fraud laws in most jurisdictions.  
+> *You are solely responsible for your actions.*
+
+---
+
+## 💡 Pro Tips
+- Scan your **own staging environment** first
+- Always get **written authorization** before scanning client systems
+- Use HTML reports for professional vulnerability documentation
+- Check `reports/` folder if download buttons fail
+
+---
+
+## 👤 Author
+**hackus_man**
+
+---
+
+> 🔒 LaraRecon v1.0 • Scan Fast • Stay Ethical • Secure Laravel  
+> *"With great power comes great responsibility"* 🕷️
